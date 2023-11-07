@@ -1,0 +1,35 @@
+{
+    "name": "vscode-tree-sitter-query",
+    "displayName": "vscode-tree-sitter-query",
+    "publisher": "jrieken",
+    "description": "",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.60.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "scm",
+                "aliases": [
+                    "Tree-sitter Query",
+                    "scm"
+                ],
+                "extensions": [
+                    ".scm"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "scm",
+                "scopeName": "source.scm",
+                "path": "./syntaxes/scm.tmLanguage.json"
+            }
+        ]
+    }
+}

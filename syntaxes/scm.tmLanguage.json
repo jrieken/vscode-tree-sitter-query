@@ -1,0 +1,108 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Tree-sitter Query",
+	"patterns": [
+		{
+			"include": "#expression"
+		}
+	],
+	"repository": {
+		"expression": {
+			"patterns": [
+				{
+					"include": "#comment"
+				},
+				{
+					"include": "#field"
+				},
+				{
+					"include": "#capture"
+				},
+				{
+					"include": "#node"
+				},
+				{
+					"include": "#parent-expression"
+				},
+				{
+					"include": "#bracket-expression"
+				}
+			]
+		},
+		"comment": {
+			"begin": ";;",
+			"beginCaptures": {
+				"0": {
+					"name": "comment.line.scm"
+				}
+			},
+			"end": "\\n",
+			"name": "comment.line.scm"
+		},
+		"paren-expression": {
+			"begin": "\\(",
+			"end": "\\)",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.paren.open"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.paren.close"
+				}
+			},
+			"name": "expression.group",
+			"patterns": [
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"bracket-expression": {
+			"begin": "\\[",
+			"end": "\\]",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.paren.open"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.paren.close"
+				}
+			},
+			"name": "expression.group",
+			"patterns": [
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"field": {
+			"patterns": [
+				{
+					"name": "entity.name.scm",
+					"match": "[a-zA-Z_]+:"
+				}
+			]
+		},
+		"capture": {
+			"patterns": [
+				{
+					"name": "variable.other.readwrite.scm",
+					"match": "\\@[a-zA-Z_.]+"
+				}
+			]
+		},
+		"node": {
+			"patterns": [
+				{
+					"name": "node.scm",
+					"match": "[a-zA-Z_]+"
+				}
+			]
+		}
+	},
+	"scopeName": "source.scm"
+}
