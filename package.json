@@ -2,7 +2,7 @@
     "name": "vscode-tree-sitter-query",
     "displayName": "vscode-tree-sitter-query",
     "publisher": "jrieken",
-    "description": "",
+    "description": "Edit and run Tree-Sitter queries",
     "version": "0.0.1",
     "engines": {
         "vscode": "^1.60.0"
@@ -10,6 +10,8 @@
     "categories": [
         "Programming Languages"
     ],
+    "activationEvents": [],
+    "main": "./dist/extension.js",
     "contributes": {
         "languages": [
             {
@@ -31,5 +33,43 @@
                 "path": "./syntaxes/scm.tmLanguage.json"
             }
         ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run package",
+        "compile": "webpack",
+        "watch": "webpack --watch",
+        "package": "npm run build-wasm && webpack --mode production --devtool hidden-source-map",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "pretest": "npm run compile-tests && npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "build-wasm": "ts-node src/buildWasm.ts"
+    },
+    "devDependencies": {
+        "@types/node": "18.x",
+        "@types/vscode": "^1.84.0",
+        "@typescript-eslint/eslint-plugin": "^6.9.0",
+        "@typescript-eslint/parser": "^6.9.0",
+        "@vscode/test-electron": "^2.3.6",
+        "copy-webpack-plugin": "^11.0.0",
+        "eslint": "^8.52.0",
+        "glob": "^10.3.10",
+        "mocha": "^10.2.0",
+        "ts-loader": "^9.5.0",
+        "typescript": "^5.2.2",
+        "webpack": "^5.89.0",
+        "webpack-cli": "^5.1.4",
+        "tree-sitter-c-sharp": "^0.20.0",
+        "tree-sitter-cli": "^0.20.8",
+        "tree-sitter-cpp": "^0.20.3",
+        "tree-sitter-go": "^0.20.0",
+        "tree-sitter-java": "^0.20.2",
+        "tree-sitter-javascript": "^0.20.1",
+        "tree-sitter-python": "^0.20.4",
+        "tree-sitter-ruby": "^0.19.0",
+        "tree-sitter-typescript": "^0.20.3",
+        "tree-sitter-rust": "^0.20.4",
+        "ts-node": "^10.9.1",
+        "web-tree-sitter": "^0.20.8"
     }
 }
