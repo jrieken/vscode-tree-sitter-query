@@ -18,14 +18,22 @@ async function getLanguage(parser: Parser, codeDocument: vscode.TextDocument) {
 }
 
 async function updateOutput(execution: vscode.NotebookCellExecution, data: unknown) {
-	const toStr = typeof data === 'string' ? data : JSON.stringify(data, undefined, 4);
-	const items= [new vscode.NotebookCellOutputItem(new TextEncoder().encode(toStr), typeof data === 'string' ? 'text/plain' : 'application/json')];
+
+	let items: vscode.NotebookCellOutputItem[];
+	if (data instanceof Error) {
+		items = [vscode.NotebookCellOutputItem.error(data)];
+
+	} else {
+		const toStr = typeof data === 'string' ? data : JSON.stringify(data, undefined, 4);
+		items = [new vscode.NotebookCellOutputItem(new TextEncoder().encode(toStr), typeof data === 'string' ? 'text/plain' : 'application/json')];
+	}
+
 	const output = new vscode.NotebookCellOutput(items);
 	await execution.appendOutput(output);
 }
 
 function isQueryCell(cell: vscode.NotebookCell) {
-    return cell.document.languageId === NotebookSerializer.queryLanguageId;
+	return cell.document.languageId === NotebookSerializer.queryLanguageId;
 }
 
 export function createNotebookController() {
@@ -37,26 +45,30 @@ export function createNotebookController() {
 		for (const cell of cells) {
 			if (isQueryCell(cell) && !codeDocument) {
 				// Look for the first code cell before this one
-                const allCells = notebook.getCells();
-                for (let i = cell.index - 1; i >= 0; i--) {
-                    if (!isQueryCell(allCells[i])) {
-                        codeDocument = allCells[i].document;
-                        break;
-                    }
-                }
+				const allCells = notebook.getCells();
+				for (let i = cell.index - 1; i >= 0; i--) {
+					if (!isQueryCell(allCells[i])) {
+						codeDocument = allCells[i].document;
+						break;
+					}
+				}
 			} else if (!isQueryCell(cell)) {
 				codeDocument = cell.document;
 			}
 
 			const execution = startExecution(controller, cell);
 
+			let cleanup: { delete(): void }[] = [];
+
 			try {
 				const language = await getLanguage(parser, codeDocument!);
 				const parseTree = parser.parse(codeDocument!.getText());
+				cleanup.push(parseTree);
 
 				let data: string | Partial<SyntaxNode>[] = [];
 				if (isQueryCell(cell)) {
 					const queryResult = language.query(cell.document.getText());
+					cleanup.push(queryResult);
 					const matches = queryResult.matches(parseTree.rootNode);
 					for (const match of matches) {
 						for (const capture of match.captures) {
@@ -68,15 +80,21 @@ export function createNotebookController() {
 							});
 						}
 					}
+
 				} else {
 					data = printParseTree(parseTree.rootNode, 0).join('\n');
 				}
 
 				await updateOutput(execution, data);
 				execution.end(true);
+
 			} catch (ex) {
 				await updateOutput(execution, ex);
 				execution.end(false);
+			} finally {
+				for (const item of cleanup) {
+					item.delete();
+				}
 			}
 		}
 	});
