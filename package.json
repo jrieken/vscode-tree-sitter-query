@@ -70,7 +70,7 @@
         "watch-tests": "tsc -p . -w --outDir out",
         "pretest": "npm run compile-tests && npm run compile && npm run lint",
         "lint": "eslint src --ext ts",
-        "build-wasm": "cp node_modules/web-tree-sitter/tree-sitter.wasm src/.wasm/ && ts-node src/buildWasm.ts"
+        "build-wasm": "ts-node src/buildWasm.ts && cp node_modules/web-tree-sitter/tree-sitter.wasm src/.wasm/"
     },
     "devDependencies": {
         "@types/node": "18.x",
