@@ -8,11 +8,11 @@ export function activate(context: vscode.ExtensionContext) {
 	const controller = createNotebookController();
 	controller.supportedLanguages = [NotebookSerializer.queryLanguageId, ...Object.values(WASMLanguage)];
 	context.subscriptions.push(
-		vscode.workspace.registerNotebookSerializer('tree-sitter', serializer),
+		vscode.workspace.registerNotebookSerializer('tree-sitter-query', serializer),
 		vscode.commands.registerCommand('vscode-treesitter-notebook.new', async () => {
 			const data = serializer.createNew();
-			const notebookDocument = await vscode.workspace.openNotebookDocument("tree-sitter", data);
-			await vscode.commands.executeCommand("vscode.openWith", notebookDocument.uri, "tree-sitter");
+			const notebookDocument = await vscode.workspace.openNotebookDocument("tree-sitter-query", data);
+			await vscode.commands.executeCommand("vscode.openWith", notebookDocument.uri, "tree-sitter-query");
 		}),
 	);
 }

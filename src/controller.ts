@@ -29,7 +29,7 @@ function isQueryCell(cell: vscode.NotebookCell) {
 }
 
 export function createNotebookController() {
-	return vscode.notebooks.createNotebookController('tree-sitter-query', 'tree-sitter', 'Tree Sitter Playground', async (cells, notebook, controller) => {
+	return vscode.notebooks.createNotebookController('tree-sitter-query', 'tree-sitter-query', 'Tree Sitter Playground', async (cells, notebook, controller) => {
 		await Parser.init();
 		const parser = new Parser();
 		let query;
