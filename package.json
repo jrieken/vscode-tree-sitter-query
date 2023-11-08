@@ -3,7 +3,7 @@
     "displayName": "vscode-tree-sitter-query",
     "publisher": "jrieken",
     "description": "Edit and run Tree-Sitter queries",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "repository": {
         "url": "https://github.com/jrieken/vscode-tree-sitter-query"
     },
@@ -41,9 +41,9 @@
                 "type": "tree-sitter-query",
                 "displayName": "Tree-Sitter Query",
                 "selector": [
-                {
-                    "filenamePattern": "tsqnb"
-                }
+                    {
+                        "filenamePattern": "tsqnb"
+                    }
                 ]
             }
         ],
@@ -56,7 +56,7 @@
         "menus": {
             "file/newFile": [
                 {
-                "command": "vscode-treesitter-notebook.new"
+                    "command": "vscode-treesitter-notebook.new"
                 }
             ]
         }
