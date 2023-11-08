@@ -15,3 +15,7 @@ jobs:
           node-version: 16
       - run: npm ci
       - run: npx vsce package
+      - uses: actions/upload-artifact@v3
+        with:
+          name: vscode-tree-sitter-query.vsix
+          path: *.vsix
