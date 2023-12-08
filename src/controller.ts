@@ -10,9 +10,9 @@ function startExecution(controller: vscode.NotebookController, cell: vscode.Note
 	return execution;
 }
 
-async function getLanguage(parser: Parser, codeDocument: vscode.TextDocument) {
+async function getLanguage(extensionUri: vscode.Uri, parser: Parser, codeDocument: vscode.TextDocument) {
 	const wasmLanguage = getWasmLanguage(codeDocument.languageId);
-	const language = await loadLanguage(wasmLanguage);
+	const language = await loadLanguage(extensionUri, wasmLanguage);
 	parser.setLanguage(language);
 	return language;
 }
@@ -36,9 +36,19 @@ function isQueryCell(cell: vscode.NotebookCell) {
 	return cell.document.languageId === NotebookSerializer.queryLanguageId;
 }
 
-export function createNotebookController() {
+declare var navigator: object | undefined;
+
+export function createNotebookController(extensionUri: vscode.Uri) {
 	return vscode.notebooks.createNotebookController('tree-sitter-query', 'tree-sitter-query', 'Tree Sitter Playground', async (cells, notebook, controller) => {
-		await Parser.init();
+		// We only need to provide these options when running in the web worker
+		const options: object | undefined = typeof navigator === 'undefined'
+			? undefined
+			: {
+				locateFile() {
+					return vscode.Uri.joinPath(extensionUri, 'dist', 'tree-sitter.wasm').toString(true);
+				}
+			};
+		await Parser.init(options);
 		const parser = new Parser();
 		let query;
 		let codeDocument: vscode.TextDocument | undefined;
@@ -61,7 +71,7 @@ export function createNotebookController() {
 			let cleanup: { delete(): void }[] = [];
 
 			try {
-				const language = await getLanguage(parser, codeDocument!);
+				const language = await getLanguage(extensionUri, parser, codeDocument!);
 				const parseTree = parser.parse(codeDocument!.getText());
 				cleanup.push(parseTree);
 

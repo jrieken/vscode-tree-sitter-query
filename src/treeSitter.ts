@@ -1,4 +1,4 @@
-import * as path from 'path';
+import { Uri } from 'vscode';
 import Parser from "web-tree-sitter";
 
 export function getWasmLanguage(languageId: string) {
@@ -38,18 +38,15 @@ export enum WASMLanguage {
     Rust = 'rust'
 }
 
-export function loadLanguage(language: WASMLanguage): Promise<Parser.Language> {
+export function loadLanguage(extensionUri: Uri, language: WASMLanguage): Promise<Parser.Language> {
     // construct a path that works both for the TypeScript source, which lives under `/src`, and for
     // the transpiled JavaScript, which lives under `/dist`
     const wasmFileLang = language === 'csharp' ? 'c-sharp' : language;
 
     const wasmFilename = `tree-sitter-${wasmFileLang}.wasm`;
 
-    // depending on if file is being run from the webpack bundle or source, change the relative path
-    const wasmFile =
-        path.basename(__dirname) === 'dist'
-            ? path.resolve(__dirname, wasmFilename)
-            : path.resolve(__dirname, '../../../dist', wasmFilename);
+    const wasmUri = Uri.joinPath(extensionUri, 'dist', wasmFilename);
+    const wasmFile = wasmUri.scheme === 'file' ? wasmUri.fsPath : wasmUri.toString(true);
 
     return Parser.Language.load(wasmFile);
 }
