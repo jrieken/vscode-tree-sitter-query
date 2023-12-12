@@ -5,7 +5,7 @@ import { WASMLanguage } from './treeSitter';
 
 export function activate(context: vscode.ExtensionContext) {
 	const serializer = new NotebookSerializer();
-	const controller = createNotebookController();
+	const controller = createNotebookController(context.extensionUri);
 	controller.supportedLanguages = [NotebookSerializer.queryLanguageId, ...Object.values(WASMLanguage)];
 	context.subscriptions.push(
 		vscode.workspace.registerNotebookSerializer('tree-sitter-query', serializer),

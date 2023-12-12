@@ -3,7 +3,7 @@
     "displayName": "vscode-tree-sitter-query",
     "publisher": "jrieken",
     "description": "Edit and run Tree-Sitter queries",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "repository": {
         "url": "https://github.com/jrieken/vscode-tree-sitter-query"
     },
@@ -15,6 +15,7 @@
     ],
     "activationEvents": [],
     "main": "./dist/extension.js",
+    "browser": "./dist/web/extension.js",
     "contributes": {
         "languages": [
             {
@@ -83,6 +84,7 @@
         "eslint": "^8.52.0",
         "glob": "^10.3.10",
         "mocha": "^10.2.0",
+        "path-browserify": "^1.0.1",
         "tree-sitter-c-sharp": "^0.20.0",
         "tree-sitter-cli": "^0.20.8",
         "tree-sitter-cpp": "^0.20.3",
