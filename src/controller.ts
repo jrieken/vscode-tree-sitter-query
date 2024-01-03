@@ -50,7 +50,6 @@ export function createNotebookController(extensionUri: vscode.Uri) {
 			};
 		await Parser.init(options);
 		const parser = new Parser();
-		let query;
 		let codeDocument: vscode.TextDocument | undefined;
 		for (const cell of cells) {
 			if (isQueryCell(cell) && !codeDocument) {
