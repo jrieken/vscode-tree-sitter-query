@@ -74,7 +74,7 @@ export function createNotebookController(extensionUri: vscode.Uri) {
 				const parseTree = parser.parse(codeDocument!.getText());
 				cleanup.push(parseTree);
 
-				let data: string | Partial<SyntaxNode>[] = [];
+				let data: string | Partial<SyntaxNode & { captureName: string }>[] = [];
 				if (isQueryCell(cell)) {
 					const queryResult = language.query(cell.document.getText());
 					cleanup.push(queryResult);
@@ -82,6 +82,7 @@ export function createNotebookController(extensionUri: vscode.Uri) {
 					for (const match of matches) {
 						for (const capture of match.captures) {
 							data.push({
+								captureName: capture.name,
 								type: capture.node.type,
 								text: capture.node.text,
 								startPosition: capture.node.startPosition,
