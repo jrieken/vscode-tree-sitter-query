@@ -51,7 +51,8 @@
         "commands": [
             {
                 "command": "vscode-treesitter-notebook.new",
-                "title": "Tree-Sitter Notebook"
+                "title": "Tree-Sitter Notebook",
+                "category": "Tree-Sitter Query"
             }
         ],
         "menus": {
