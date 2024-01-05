@@ -36,19 +36,9 @@ function isQueryCell(cell: vscode.NotebookCell) {
 	return cell.document.languageId === NotebookSerializer.queryLanguageId;
 }
 
-declare var navigator: object | undefined;
 
 export function createNotebookController(extensionUri: vscode.Uri) {
 	return vscode.notebooks.createNotebookController('tree-sitter-query', 'tree-sitter-query', 'Tree Sitter Playground', async (cells, notebook, controller) => {
-		// We only need to provide these options when running in the web worker
-		const options: object | undefined = typeof navigator === 'undefined'
-			? undefined
-			: {
-				locateFile() {
-					return vscode.Uri.joinPath(extensionUri, 'dist', 'tree-sitter.wasm').toString(true);
-				}
-			};
-		await Parser.init(options);
 		const parser = new Parser();
 		let codeDocument: vscode.TextDocument | undefined;
 		for (const cell of cells) {
