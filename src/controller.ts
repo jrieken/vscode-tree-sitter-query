@@ -50,7 +50,6 @@ export function createNotebookController(extensionUri: vscode.Uri) {
 			};
 		await Parser.init(options);
 		const parser = new Parser();
-		let query;
 		let codeDocument: vscode.TextDocument | undefined;
 		for (const cell of cells) {
 			if (isQueryCell(cell) && !codeDocument) {
@@ -75,7 +74,7 @@ export function createNotebookController(extensionUri: vscode.Uri) {
 				const parseTree = parser.parse(codeDocument!.getText());
 				cleanup.push(parseTree);
 
-				let data: string | Partial<SyntaxNode>[] = [];
+				let data: string | Partial<SyntaxNode & { captureName: string }>[] = [];
 				if (isQueryCell(cell)) {
 					const queryResult = language.query(cell.document.getText());
 					cleanup.push(queryResult);
@@ -83,6 +82,7 @@ export function createNotebookController(extensionUri: vscode.Uri) {
 					for (const match of matches) {
 						for (const capture of match.captures) {
 							data.push({
+								captureName: capture.name,
 								type: capture.node.type,
 								text: capture.node.text,
 								startPosition: capture.node.startPosition,
@@ -92,7 +92,7 @@ export function createNotebookController(extensionUri: vscode.Uri) {
 					}
 
 				} else {
-					data = printParseTree(parseTree.rootNode, 0).join('\n');
+					data = printParseTree(parseTree.rootNode).join('\n');
 				}
 
 				await updateOutput(execution, data);
@@ -110,10 +110,42 @@ export function createNotebookController(extensionUri: vscode.Uri) {
 	});
 }
 
-function printParseTree(node: Parser.SyntaxNode, depth = 0): string[] {
-	const data = [' '.repeat(depth * 2) + node.type + ` [${node.startPosition.row}, ${node.startPosition.column}] - [${node.endPosition.row}, ${node.endPosition.column}]`];
-	for (const child of node.namedChildren) {
-		data.push(...printParseTree(child, depth + 1));
+function printParseTree(node: Parser.SyntaxNode): string[] {
+	const printedNodes: string[] = [];
+
+	const cursor = node.walk();
+	let depth = 0;
+	let lastSeenDepth = 0;
+
+	// depth-first pre-order tree traversal
+	while (depth >= 0) {
+		const isNodeUnexplored = lastSeenDepth <= depth;
+
+		if (isNodeUnexplored && cursor.currentNode().isNamed()) {
+			const currentNode = cursor.currentNode();
+			printedNodes.push(printNode(currentNode, depth, cursor.currentFieldName()));
+		}
+
+		lastSeenDepth = depth;
+
+		if (isNodeUnexplored && cursor.gotoFirstChild()) {
+			++depth;
+			continue;
+		}
+
+		if (cursor.gotoNextSibling()) {
+			continue;
+		}
+
+		cursor.gotoParent();
+		--depth;
 	}
-	return data;
+
+	return printedNodes;
 }
+
+function printNode(node: Parser.SyntaxNode, depth: number, fieldName: string | undefined) {
+	const indent = ' '.repeat(depth * 2);
+	const fieldNameStr = fieldName ? `${fieldName}: ` : '';
+	return `${indent}${fieldNameStr}${node.type} [${node.startPosition.row}, ${node.startPosition.column}] - [${node.endPosition.row}, ${node.endPosition.column}]`;
+}	
