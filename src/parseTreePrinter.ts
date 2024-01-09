@@ -39,7 +39,7 @@ export function printParseTree(node: Parser.SyntaxNode, options: PrintingOptions
 }
 
 function printNode(node: Parser.SyntaxNode, depth: number, fieldName: string | undefined) {
-	const indent = ' '.repeat(depth * 2);
+	const indent = ' '.repeat(depth * 4);
 	const fieldNameStr = fieldName ? `${fieldName}: ` : '';
 	return `${indent}${fieldNameStr}${node.type} [${node.startPosition.row}, ${node.startPosition.column}] - [${node.endPosition.row}, ${node.endPosition.column}]`;
 }	
