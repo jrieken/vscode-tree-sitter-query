@@ -83,7 +83,7 @@ export function createNotebookController(extensionUri: vscode.Uri) {
 					}
 
 				} else {
-					data = printParseTree(parseTree.rootNode).join('\n');
+					data = printParseTree(parseTree.rootNode, { printOnlyNamed: true }).join('\n');
 				}
 
 				await updateOutput(execution, data);

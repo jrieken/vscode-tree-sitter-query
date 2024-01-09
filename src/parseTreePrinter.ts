@@ -1,6 +1,10 @@
 import Parser from "web-tree-sitter";
 
-export function printParseTree(node: Parser.SyntaxNode): string[] {
+type PrintingOptions = {
+	printOnlyNamed: boolean;
+};
+
+export function printParseTree(node: Parser.SyntaxNode, options: PrintingOptions): string[] {
 	const printedNodes: string[] = [];
 
 	const cursor = node.walk();
@@ -11,7 +15,7 @@ export function printParseTree(node: Parser.SyntaxNode): string[] {
 	while (depth >= 0) {
 		const isNodeUnexplored = lastSeenDepth <= depth;
 
-		if (isNodeUnexplored && cursor.currentNode().isNamed()) {
+		if (isNodeUnexplored && (!options.printOnlyNamed || cursor.currentNode().isNamed())) {
 			const currentNode = cursor.currentNode();
 			printedNodes.push(printNode(currentNode, depth, cursor.currentFieldName()));
 		}
