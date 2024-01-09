@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import Parser, { SyntaxNode } from 'web-tree-sitter';
 import { NotebookSerializer } from './serializer';
 import { getWasmLanguage, loadLanguage } from './treeSitter';
+import { printParseTree } from './parseTreePrinter';
 
 function startExecution(controller: vscode.NotebookController, cell: vscode.NotebookCell) {
 	const execution = controller.createNotebookCellExecution(cell);
@@ -99,43 +100,3 @@ export function createNotebookController(extensionUri: vscode.Uri) {
 		}
 	});
 }
-
-function printParseTree(node: Parser.SyntaxNode): string[] {
-	const printedNodes: string[] = [];
-
-	const cursor = node.walk();
-	let depth = 0;
-	let lastSeenDepth = 0;
-
-	// depth-first pre-order tree traversal
-	while (depth >= 0) {
-		const isNodeUnexplored = lastSeenDepth <= depth;
-
-		if (isNodeUnexplored && cursor.currentNode().isNamed()) {
-			const currentNode = cursor.currentNode();
-			printedNodes.push(printNode(currentNode, depth, cursor.currentFieldName()));
-		}
-
-		lastSeenDepth = depth;
-
-		if (isNodeUnexplored && cursor.gotoFirstChild()) {
-			++depth;
-			continue;
-		}
-
-		if (cursor.gotoNextSibling()) {
-			continue;
-		}
-
-		cursor.gotoParent();
-		--depth;
-	}
-
-	return printedNodes;
-}
-
-function printNode(node: Parser.SyntaxNode, depth: number, fieldName: string | undefined) {
-	const indent = ' '.repeat(depth * 2);
-	const fieldNameStr = fieldName ? `${fieldName}: ` : '';
-	return `${indent}${fieldNameStr}${node.type} [${node.startPosition.row}, ${node.startPosition.column}] - [${node.endPosition.row}, ${node.endPosition.column}]`;
-}	
