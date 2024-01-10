@@ -53,6 +53,11 @@
                 "command": "vscode-treesitter-notebook.new",
                 "title": "Tree-Sitter Notebook",
                 "category": "Tree-Sitter Query"
+            },
+            {
+                "command": "vscode-treesitter-parse-tree-editor.createToSide",
+                "title": "Open Parse Tree View to Side",
+                "category": "Tree-Sitter"
             }
         ],
         "menus": {

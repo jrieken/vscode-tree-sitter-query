@@ -4,6 +4,7 @@ import { createNotebookController } from './controller';
 import { WASMLanguage } from './treeSitter';
 import Parser from 'web-tree-sitter';
 import { QueryDiagnosticsProvider } from './queryDiagnosticsProvider';
+import { createParseTreeEditorCommand } from './parseTreeEditor';
 
 declare var navigator: object | undefined;
 
@@ -33,6 +34,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			await vscode.commands.executeCommand("vscode.openWith", notebookDocument.uri, "tree-sitter-query");
 		}),
 		queryDiagnosticsProvider,
+		vscode.commands.registerCommand('vscode-treesitter-parse-tree-editor.createToSide', () => createParseTreeEditorCommand(context)),
 	);
 }
 

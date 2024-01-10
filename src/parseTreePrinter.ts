@@ -1,44 +1,28 @@
 import Parser from "web-tree-sitter";
+import { traverseDFPreOrder } from "./treeTraversal";
 
 type PrintingOptions = {
 	printOnlyNamed: boolean;
 };
 
-export function printParseTree(node: Parser.SyntaxNode, options: PrintingOptions): string[] {
+type NodePrinter = {
+	(node: Parser.SyntaxNode, depth: number, fieldName: string): string;
+};
+
+export function printParseTree(node: Parser.SyntaxNode, options: PrintingOptions, print: NodePrinter = printNode): string[] {
 	const printedNodes: string[] = [];
-
-	const cursor = node.walk();
-	let depth = 0;
-	let lastSeenDepth = 0;
-
-	// depth-first pre-order tree traversal
-	while (depth >= 0) {
-		const isNodeUnexplored = lastSeenDepth <= depth;
-
-		if (isNodeUnexplored && (!options.printOnlyNamed || cursor.currentNode().isNamed())) {
-			const currentNode = cursor.currentNode();
-			printedNodes.push(printNode(currentNode, depth, cursor.currentFieldName()));
+	traverseDFPreOrder(node, (cursor, depth) => {
+		const currentNode = cursor.currentNode();
+		if (options.printOnlyNamed && !currentNode.isNamed) {
+			return;
 		}
-
-		lastSeenDepth = depth;
-
-		if (isNodeUnexplored && cursor.gotoFirstChild()) {
-			++depth;
-			continue;
-		}
-
-		if (cursor.gotoNextSibling()) {
-			continue;
-		}
-
-		cursor.gotoParent();
-		--depth;
-	}
-
+		const printedNode = print(currentNode, depth, cursor.currentFieldName());
+		printedNodes.push(printedNode);
+	});
 	return printedNodes;
 }
 
-function printNode(node: Parser.SyntaxNode, depth: number, fieldName: string | undefined) {
+function printNode(node: Parser.SyntaxNode, depth: number, fieldName: string) {
 	const indent = ' '.repeat(depth * 4);
 	const fieldNameStr = fieldName ? `${fieldName}: ` : '';
 	return `${indent}${fieldNameStr}${node.type} [${node.startPosition.row}, ${node.startPosition.column}] - [${node.endPosition.row}, ${node.endPosition.column}]`;
