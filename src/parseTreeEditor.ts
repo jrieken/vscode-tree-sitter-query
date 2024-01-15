@@ -57,8 +57,10 @@ export class ParseTreeEditor {
 						function handleMouseOver(event) {
 							const hoveredElement = event.target;
 							hoveredElement.style.textDecoration = 'underline';
-							
-							console.log('hoveredElement.dataset.range: ', hoveredElement.dataset.range)
+						}
+						
+						function handleMouseClick(event) {
+							const hoveredElement = event.target;
 
 							// Send a message to the extension with the information about the hovered element
 							api.postMessage({
@@ -96,15 +98,20 @@ export class ParseTreeEditor {
 		};
 		const stringifiedRange = JSON.stringify(range).replace(/"/g, '&quot;'); // escape double quotes for HTML
 		return `
-			<a 
-				style="margin-left:${depth * 30}px; font-size: 16px; cursor: pointer;" 
-				onmouseover="handleMouseOver(event)"
-				onmouseout="event.target.style.textDecoration = ''"
-				data-range="${stringifiedRange}"
-			>
-				${fieldNameStr}${node.type}
-			</a>
-			[${node.startPosition.row}, ${node.startPosition.column}] - [${node.endPosition.row}, ${node.endPosition.column}]
+			<span
+				style="margin-left:${depth * 30}px; font-size: 16px;">
+				${fieldNameStr}
+				<a 
+					style="cursor: pointer;" 
+					onclick="handleMouseClick(event)"
+					onmouseover="handleMouseOver(event)"
+					onmouseout="event.target.style.textDecoration = ''"
+					data-range="${stringifiedRange}"
+				>
+					${node.type}
+				</a>
+				[${node.startPosition.row}, ${node.startPosition.column}] - [${node.endPosition.row}, ${node.endPosition.column}]
+			</span>
 			<br/>`;
 	}
 }
