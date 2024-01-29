@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import Parser, { SyntaxNode } from 'web-tree-sitter';
 import { NotebookSerializer } from './serializer';
-import { getWasmLanguage, loadLanguage } from './treeSitter';
+import { getWasmLanguage, wasmLanguageLoader, } from './treeSitter';
 import { printParseTree } from './parseTreePrinter';
 
 function startExecution(controller: vscode.NotebookController, cell: vscode.NotebookCell) {
@@ -13,7 +13,7 @@ function startExecution(controller: vscode.NotebookController, cell: vscode.Note
 
 async function getLanguage(extensionUri: vscode.Uri, parser: Parser, codeDocument: vscode.TextDocument) {
 	const wasmLanguage = getWasmLanguage(codeDocument.languageId);
-	const language = await loadLanguage(extensionUri, wasmLanguage);
+	const language = await wasmLanguageLoader.loadLanguage(extensionUri, wasmLanguage);
 	parser.setLanguage(language);
 	return language;
 }

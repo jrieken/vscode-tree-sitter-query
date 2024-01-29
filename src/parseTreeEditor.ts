@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import Parser from 'web-tree-sitter';
-import { WASMLanguage, loadLanguage } from './treeSitter';
+import { WASMLanguage, wasmLanguageLoader, } from './treeSitter';
 import { printParseTree } from './parseTreePrinter';
 
 const PARSE_TREE_EDITOR_VIEW_TYPE = 'vscode-treesitter-parse-tree-editor';
@@ -35,7 +35,7 @@ export class ParseTreeEditor {
 
 	private async updateWebview(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel) {
 
-		const language = await loadLanguage(this.context.extensionUri, document.languageId as WASMLanguage);
+		const language = await wasmLanguageLoader.loadLanguage(this.context.extensionUri, document.languageId as WASMLanguage);
 		const parser = new Parser();
 		parser.setLanguage(language);
 

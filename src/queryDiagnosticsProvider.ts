@@ -1,11 +1,10 @@
 import * as vscode from 'vscode';
 import Parser from 'web-tree-sitter';
-import { WASMLanguage, loadLanguage } from './treeSitter';
+import { WASMLanguage, wasmLanguageLoader } from './treeSitter';
 import { Lazy } from './utils';
 
 export class QueryDiagnosticsProvider {
 
-	private typescriptLanguage: Parser.Language | undefined;
 	private treeSitterQueryTemplateStringQuery: Parser.Query | undefined;
 
 	private queryDiagnosticsCollection: vscode.DiagnosticCollection;
@@ -39,8 +38,8 @@ export class QueryDiagnosticsProvider {
 	}
 
 	async init() {
-		this.typescriptLanguage = await loadLanguage(this.extensionUri, WASMLanguage.TypeScript);
-		this.treeSitterQueryTemplateStringQuery = this.typescriptLanguage.query(`
+		const typescriptLanguage = await wasmLanguageLoader.loadLanguage(this.extensionUri, WASMLanguage.TypeScript);
+		this.treeSitterQueryTemplateStringQuery = typescriptLanguage.query(`
 		(call_expression
 			function: (member_expression
 							object: (identifier) @identifier
@@ -76,7 +75,8 @@ export class QueryDiagnosticsProvider {
 	private async updateDiagnosticsInTypescriptSourceFile(document: vscode.TextDocument) {
 
 		const parser = new Parser();
-		parser.setLanguage(this.typescriptLanguage!);
+		const typescriptLanguage = await wasmLanguageLoader.loadLanguage(this.extensionUri, WASMLanguage.TypeScript);
+		parser.setLanguage(typescriptLanguage);
 		try {
 			const parseTree = parser.parse(document.getText());
 			const matches = this.treeSitterQueryTemplateStringQuery!.matches(parseTree.rootNode);
@@ -90,7 +90,7 @@ export class QueryDiagnosticsProvider {
 			for (let i = 0; i < errors.length; i++) {
 				const error = errors[i];
 
-				if (/* is tree-sitter query parsing error */
+				if (/* is tree-sitter query parsing error */ // TODO@ulugbekna: this is not entirely correct and needs to share some code with `updateDiagnosticsInScmFile`
 					error && typeof error === 'object' &&
 					'index' in error && typeof error.index === 'number' &&
 					'message' in error && typeof error.message === 'string'
@@ -123,7 +123,7 @@ export class QueryDiagnosticsProvider {
 			return;
 		}
 
-		const language = await loadLanguage(this.extensionUri, <WASMLanguage>targetLang);
+		const language = await wasmLanguageLoader.loadLanguage(this.extensionUri, <WASMLanguage>targetLang);
 
 		let error: Error | undefined;
 		try {
@@ -199,7 +199,7 @@ class InSourceTreeSitterQuery {
 		}
 
 		try {
-			const language = await loadLanguage(extensionUri, this.targetLanguage.text as WASMLanguage);
+			const language = await wasmLanguageLoader.loadLanguage(extensionUri, this.targetLanguage.text as WASMLanguage);
 			language.query(this.querySrc);
 			return undefined;
 		} catch (e) {
