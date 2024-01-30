@@ -13,7 +13,9 @@
     "categories": [
         "Programming Languages"
     ],
-    "activationEvents": [],
+    "activationEvents": [
+        "onLanguage:typescript"
+    ],
     "main": "./dist/extension.js",
     "browser": "./dist/web/extension.js",
     "contributes": {
