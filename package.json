@@ -13,7 +13,9 @@
     "categories": [
         "Programming Languages"
     ],
-    "activationEvents": [],
+    "activationEvents": [
+        "onLanguage:typescript"
+    ],
     "main": "./dist/extension.js",
     "browser": "./dist/web/extension.js",
     "contributes": {
@@ -53,6 +55,11 @@
                 "command": "vscode-treesitter-notebook.new",
                 "title": "Tree-Sitter Notebook",
                 "category": "Tree-Sitter Query"
+            },
+            {
+                "command": "vscode-treesitter-parse-tree-editor.createToSide",
+                "title": "Open Parse Tree View to Side",
+                "category": "Tree-Sitter"
             }
         ],
         "menus": {

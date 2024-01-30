@@ -27,26 +27,41 @@ export function getWasmLanguage(languageId: string) {
 }
 
 export enum WASMLanguage {
-	Python = 'python',
-	JavaScript = 'javascript',
-	TypeScript = 'typescript',
-	Go = 'go',
-	Ruby = 'ruby',
-	Csharp = 'csharp',
-	Cpp = 'cpp',
-	Java = 'java',
+    Python = 'python',
+    JavaScript = 'javascript',
+    TypeScript = 'typescript',
+    Go = 'go',
+    Ruby = 'ruby',
+    Csharp = 'csharp',
+    Cpp = 'cpp',
+    Java = 'java',
     Rust = 'rust'
 }
 
-export function loadLanguage(extensionUri: Uri, language: WASMLanguage): Promise<Parser.Language> {
-    // construct a path that works both for the TypeScript source, which lives under `/src`, and for
-    // the transpiled JavaScript, which lives under `/dist`
-    const wasmFileLang = language === 'csharp' ? 'c-sharp' : language;
+class LangLoader {
+    private map = new Map<WASMLanguage, Parser.Language>();
 
-    const wasmFilename = `tree-sitter-${wasmFileLang}.wasm`;
+    async loadLanguage(extensionUri: Uri, language: WASMLanguage): Promise<Parser.Language> {
+        if (this.map.has(language)) {
+            return Promise.resolve(this.map.get(language)!);
+        }
 
-    const wasmUri = Uri.joinPath(extensionUri, 'dist', wasmFilename);
-    const wasmFile = wasmUri.scheme === 'file' ? wasmUri.fsPath : wasmUri.toString(true);
+        // construct a path that works both for the TypeScript source, which lives under `/src`, and for
+        // the transpiled JavaScript, which lives under `/dist`
+        const wasmFileLang = language === 'csharp' ? 'c-sharp' : language;
 
-    return Parser.Language.load(wasmFile);
+        const wasmFilename = `tree-sitter-${wasmFileLang}.wasm`;
+
+        const wasmUri = Uri.joinPath(extensionUri, 'dist', wasmFilename);
+        const wasmFile = wasmUri.scheme === 'file' ? wasmUri.fsPath : wasmUri.toString(true);
+
+        const parserLang = await Parser.Language.load(wasmFile);
+
+        this.map.set(language, parserLang);
+
+        return parserLang;
+    }
+
 }
+
+export const wasmLanguageLoader = new LangLoader();

@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import Parser, { SyntaxNode } from 'web-tree-sitter';
 import { NotebookSerializer } from './serializer';
-import { getWasmLanguage, loadLanguage } from './treeSitter';
+import { getWasmLanguage, wasmLanguageLoader, } from './treeSitter';
+import { printParseTree } from './parseTreePrinter';
 
 function startExecution(controller: vscode.NotebookController, cell: vscode.NotebookCell) {
 	const execution = controller.createNotebookCellExecution(cell);
@@ -12,7 +13,7 @@ function startExecution(controller: vscode.NotebookController, cell: vscode.Note
 
 async function getLanguage(extensionUri: vscode.Uri, parser: Parser, codeDocument: vscode.TextDocument) {
 	const wasmLanguage = getWasmLanguage(codeDocument.languageId);
-	const language = await loadLanguage(extensionUri, wasmLanguage);
+	const language = await wasmLanguageLoader.loadLanguage(extensionUri, wasmLanguage);
 	parser.setLanguage(language);
 	return language;
 }
@@ -36,19 +37,9 @@ function isQueryCell(cell: vscode.NotebookCell) {
 	return cell.document.languageId === NotebookSerializer.queryLanguageId;
 }
 
-declare var navigator: object | undefined;
 
 export function createNotebookController(extensionUri: vscode.Uri) {
 	return vscode.notebooks.createNotebookController('tree-sitter-query', 'tree-sitter-query', 'Tree Sitter Playground', async (cells, notebook, controller) => {
-		// We only need to provide these options when running in the web worker
-		const options: object | undefined = typeof navigator === 'undefined'
-			? undefined
-			: {
-				locateFile() {
-					return vscode.Uri.joinPath(extensionUri, 'dist', 'tree-sitter.wasm').toString(true);
-				}
-			};
-		await Parser.init(options);
 		const parser = new Parser();
 		let codeDocument: vscode.TextDocument | undefined;
 		for (const cell of cells) {
@@ -92,7 +83,7 @@ export function createNotebookController(extensionUri: vscode.Uri) {
 					}
 
 				} else {
-					data = printParseTree(parseTree.rootNode).join('\n');
+					data = printParseTree(parseTree.rootNode, { printOnlyNamed: true }).join('\n');
 				}
 
 				await updateOutput(execution, data);
@@ -109,43 +100,3 @@ export function createNotebookController(extensionUri: vscode.Uri) {
 		}
 	});
 }
-
-function printParseTree(node: Parser.SyntaxNode): string[] {
-	const printedNodes: string[] = [];
-
-	const cursor = node.walk();
-	let depth = 0;
-	let lastSeenDepth = 0;
-
-	// depth-first pre-order tree traversal
-	while (depth >= 0) {
-		const isNodeUnexplored = lastSeenDepth <= depth;
-
-		if (isNodeUnexplored && cursor.currentNode().isNamed()) {
-			const currentNode = cursor.currentNode();
-			printedNodes.push(printNode(currentNode, depth, cursor.currentFieldName()));
-		}
-
-		lastSeenDepth = depth;
-
-		if (isNodeUnexplored && cursor.gotoFirstChild()) {
-			++depth;
-			continue;
-		}
-
-		if (cursor.gotoNextSibling()) {
-			continue;
-		}
-
-		cursor.gotoParent();
-		--depth;
-	}
-
-	return printedNodes;
-}
-
-function printNode(node: Parser.SyntaxNode, depth: number, fieldName: string | undefined) {
-	const indent = ' '.repeat(depth * 2);
-	const fieldNameStr = fieldName ? `${fieldName}: ` : '';
-	return `${indent}${fieldNameStr}${node.type} [${node.startPosition.row}, ${node.startPosition.column}] - [${node.endPosition.row}, ${node.endPosition.column}]`;
-}	
