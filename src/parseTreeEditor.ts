@@ -8,6 +8,7 @@ const PARSE_TREE_EDITOR_VIEW_TYPE = 'vscode-treesitter-parse-tree-editor';
 type OriginalFileRange = {
 	start: Parser.Point;
 	end: Parser.Point;
+	uri?: string;
 };
 
 export class ParseTreeEditor {
@@ -90,11 +91,12 @@ export class ParseTreeEditor {
 		});
 	}
 
-	private static renderNode(node: Parser.SyntaxNode, depth: number, fieldName: string | undefined) {
+	static renderNode(node: Parser.SyntaxNode, depth: number, fieldName: string | undefined, uri: vscode.Uri | undefined) {
 		const fieldNameStr = fieldName ? `${fieldName}: ` : '';
 		const range: OriginalFileRange = {
 			start: node.startPosition,
 			end: node.endPosition,
+			uri: uri?.toString()
 		};
 		const stringifiedRange = JSON.stringify(range).replace(/"/g, '&quot;'); // escape double quotes for HTML
 		return `

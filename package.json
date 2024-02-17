@@ -50,6 +50,17 @@
                 ]
             }
         ],
+        "notebookRenderer": [
+            {
+                "id": "tree-sitter-notebook",
+                "displayName": "Tree-Sitter Output Renderer",
+                "mimeTypes": [
+                    "x-application/tree-sitter"
+                ],
+                "requiresMessaging": "always",
+                "entrypoint": "./dist/renderer.js"
+            }
+        ],
         "commands": [
             {
                 "command": "vscode-treesitter-notebook.new",
@@ -85,6 +96,7 @@
         "@types/node": "18.x",
         "@types/vscode": "^1.84.0",
         "@typescript-eslint/eslint-plugin": "^6.9.0",
+        "@types/vscode-notebook-renderer": "^1.60.0",
         "@typescript-eslint/parser": "^6.9.0",
         "@vscode/test-electron": "^2.3.6",
         "@vscode/vsce": "^2.22.0",
