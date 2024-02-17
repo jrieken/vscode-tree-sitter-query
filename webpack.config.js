@@ -89,4 +89,41 @@ const webExtensionConfig = {
   },
 };
 
-module.exports = [ nodeExtensionConfig, webExtensionConfig ];
+
+const rendererConfig = {
+	...sharedConfig,
+	entry: './src/renderer/tree-sitter-renderer.ts',
+	output: {
+		path: path.resolve(__dirname, 'dist'),
+		filename: 'renderer.js',
+		libraryTarget: 'module',
+	},
+	resolve: {
+		extensions: ['.ts'],
+	},
+	experiments: {
+		outputModule: true,
+	},
+	module: {
+		rules: [
+			{
+				test: /\.ts?$/,
+				exclude: /node_modules/,
+				use: [
+					{
+						loader: 'ts-loader',
+						options: {
+							configFile: path.resolve(__dirname, './src/renderer/tsconfig.json'),
+							projectReferences: true,
+							compilerOptions: {
+								module: 'esnext',
+							},
+						},
+					},
+				],
+			}
+		],
+	}
+};
+
+module.exports = [ nodeExtensionConfig, webExtensionConfig, rendererConfig ];
