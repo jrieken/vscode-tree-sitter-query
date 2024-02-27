@@ -19,7 +19,7 @@ export class ParseTreeEditor {
 		webviewPanel: vscode.WebviewPanel,
 	) {
 		// Listen for changes in the document
-		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(async e => {
+		const onDocumentChangeSubscription = vscode.workspace.onDidChangeTextDocument(async e => {
 			if (e.document.uri.toString() === document.uri.toString()) {
 				this.updateWebview(document, webviewPanel);
 			}
@@ -27,7 +27,7 @@ export class ParseTreeEditor {
 
 		// Clean up the event listener when the webview panel is disposed
 		webviewPanel.onDidDispose(() => {
-			changeDocumentSubscription.dispose();
+			onDocumentChangeSubscription.dispose();
 		});
 
 		// Update the webview content 
