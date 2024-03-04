@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import Parser from 'web-tree-sitter';
-import { WASMLanguage, wasmLanguageLoader, } from './treeSitter';
 import { printParseTree } from './parseTreePrinter';
+import { WASMLanguage, wasmLanguageLoader, } from './treeSitter';
 
 const PARSE_TREE_EDITOR_VIEW_TYPE = 'vscode-treesitter-parse-tree-editor';
 
@@ -11,7 +11,25 @@ type OriginalFileRange = {
 	uri?: string;
 };
 
+const OriginalFileRange = {
+	/** 
+	 * Serialize to JSON. 
+	 * 
+	 * @remarks escapes double quotes for HTML
+	 */
+	serializeHTMLSafe(range: OriginalFileRange): string {
+		return JSON.stringify(range).replace(/"/g, '&quot;');
+	}
+};
+
 export class ParseTreeEditor {
+
+	/**  
+	 * @deprecated use `getParseTree` instead to get the tree
+	 * 
+	 * @internal Should only be used by `getParseTree` 
+	 * */
+	private __parseTree: undefined | { documentVersion: number; tree: Parser.Tree } = undefined;
 
 	constructor(
 		private readonly context: vscode.ExtensionContext,
@@ -19,28 +37,87 @@ export class ParseTreeEditor {
 		webviewPanel: vscode.WebviewPanel,
 	) {
 		// Listen for changes in the document
-		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(async e => {
+		const onDocumentChangeSubscription = vscode.workspace.onDidChangeTextDocument(async e => {
 			if (e.document.uri.toString() === document.uri.toString()) {
 				this.updateWebview(document, webviewPanel);
 			}
 		});
 
+		const onDocumentClosedSubscription = vscode.workspace.onDidCloseTextDocument(e => {
+			if (e.uri.toString() === document.uri.toString()) {
+				webviewPanel.dispose();
+			}
+		});
+
+		const onSelectionChangeSubscription = vscode.window.onDidChangeTextEditorSelection(async e => {
+			if (e.textEditor.document.uri.toString() === document.uri.toString() && e.selections.length > 0) {
+				const selection = e.selections[0];
+				this.highlightNodeAtSelection(document, webviewPanel, selection);
+			}
+		});
+
 		// Clean up the event listener when the webview panel is disposed
 		webviewPanel.onDidDispose(() => {
-			changeDocumentSubscription.dispose();
+			onDocumentChangeSubscription.dispose();
+			onDocumentClosedSubscription.dispose();
+			onSelectionChangeSubscription.dispose();
+			this.__parseTree?.tree.delete();
 		});
 
 		// Update the webview content 
 		this.updateWebview(document, webviewPanel);
 	}
 
+	private async highlightNodeAtSelection(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel, selection: vscode.Selection) {
+		const treeHandle = await this.getParseTree(document);
+
+		const tree = treeHandle.tree;
+
+		const node = tree.rootNode.descendantForPosition(
+			{ row: selection.start.line, column: selection.start.character },
+			{ row: selection.end.line, column: selection.end.character },
+		);
+
+		webviewPanel.webview.postMessage({
+			eventKind: 'selectedNodeChange',
+			selectedNodeRange: {
+				start: node.startPosition,
+				end: node.endPosition,
+			}
+		});
+	}
+
+	private async getParseTree(document: vscode.TextDocument) {
+
+		if (this.__parseTree?.documentVersion === document.version) {
+			return this.__parseTree;
+		}
+
+		this.__parseTree?.tree.delete();
+		this.__parseTree = undefined;
+
+		while (this.__parseTree === undefined || this.__parseTree.documentVersion !== document.version) {
+
+			const docVersion: number = document.version;
+
+			const language = await wasmLanguageLoader.loadLanguage(this.context.extensionUri, document.languageId as WASMLanguage);
+
+			if (docVersion !== document.version) { continue; }
+
+			const parser = new Parser();
+			parser.setLanguage(language);
+
+			const tree = parser.parse(document.getText());
+
+			this.__parseTree = { documentVersion: docVersion, tree };
+		}
+
+		return this.__parseTree;
+	}
+
 	private async updateWebview(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel) {
 
-		const language = await wasmLanguageLoader.loadLanguage(this.context.extensionUri, document.languageId as WASMLanguage);
-		const parser = new Parser();
-		parser.setLanguage(language);
-
-		const tree = parser.parse(document.getText());
+		const treeHandle = await this.getParseTree(document);
 
 		// Set the webview's HTML to the parse tree
 		webviewPanel.webview.html = `
@@ -50,32 +127,91 @@ export class ParseTreeEditor {
 				</head>
 				<body>
 					<h1> Parse Tree </h1>
-					${printParseTree(tree.rootNode, { printOnlyNamed: false }, ParseTreeEditor.renderNode).join('\n')}
+					${printParseTree(treeHandle.tree.rootNode, { printOnlyNamed: false }, ParseTreeEditor.renderNode).join('\n')}
 					<script>
 					
 						const api = acquireVsCodeApi();
-					
+						
+						if (!api) {
+							console.error(new Error('Unexpected: No vscode api'));
+						}
+						
+						let selectedElement = new class {
+							
+							constructor() {
+								this._selectedElt = null;
+							}
+							
+							update(newElt) {
+								if (this._selectedElt) {
+									this._selectedElt.style.textDecoration = 'none';
+									this._selectedElt.style.border = '';
+								}
+								this._selectedElt = newElt;
+								this._selectedElt.style.textDecoration = 'underline';
+								this._selectedElt.style.border = '1px solid darkgray';
+							}
+						}
+
 						function handleMouseOver(event) {
-							const hoveredElement = event.target;
-							hoveredElement.style.textDecoration = 'underline';
+							event.target.style.textDecoration = 'underline';
+						}
+						
+						function handleMouseOut(event) {
+							event.target.style.textDecoration = ''
 						}
 						
 						function handleMouseClick(event) {
-							const hoveredElement = event.target;
+							const clickedElement = event.target;
+
+							selectedElement.update(clickedElement);
 
 							// Send a message to the extension with the information about the hovered element
 							api.postMessage({
 								eventKind: 'hover',
-								originalFileRange: hoveredElement.dataset.range, // stringified JSON - see OriginalFileRange
+								originalFileRange: clickedElement.dataset.range, // stringified JSON - see OriginalFileRange
 							});
 						}
+						
+						window.addEventListener('message', event => {
+							const message = event.data;
+							switch (message.eventKind) {
+								case 'selectedNodeChange':
+									return handleEditorSelectionChange(message.selectedNodeRange);
+								default: 
+									throw new Error('Unhandled event kind: ' + message.eventKind);
+							}
+						});
+						
+						function handleEditorSelectionChange(selectedNodeRange) {
+							const selectedNodeRangeJSON = JSON.stringify(selectedNodeRange);
+							const selectedNode = document.querySelector(\`[data-range='\${selectedNodeRangeJSON}']\`);
+							if (!selectedNode) {
+								throw new Error('Could not find node with range: ' + JSON.stringify(selectedNodeRange));
+							}
+							selectedElement.update(selectedNode);
+							if (!isElementInViewport(selectedNode)) {
+								selectedNode.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+							}
+						}
+						
+						// CC-generated
+						function isElementInViewport(el) {
+							const rect = el.getBoundingClientRect();
+							return (
+								rect.top >= 0 &&
+								rect.left >= 0 &&
+								rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+								rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+							);
+						}
+
 					</script>
 				</body>
 			</html>
 		`;
 
 		webviewPanel.webview.onDidReceiveMessage(message => {
-			console.log(message);
 			const { originalFileRange } = message;
 			const { start, end } = JSON.parse(originalFileRange) as OriginalFileRange;
 
@@ -98,7 +234,7 @@ export class ParseTreeEditor {
 			end: node.endPosition,
 			uri: uri?.toString()
 		};
-		const stringifiedRange = JSON.stringify(range).replace(/"/g, '&quot;'); // escape double quotes for HTML
+		const stringifiedRange = OriginalFileRange.serializeHTMLSafe(range);
 		return `
 			<span
 				style="margin-left:${depth * 30}px; font-size: 16px;">
@@ -107,7 +243,7 @@ export class ParseTreeEditor {
 					style="cursor: pointer;" 
 					onclick="handleMouseClick(event)"
 					onmouseover="handleMouseOver(event)"
-					onmouseout="event.target.style.textDecoration = ''"
+					onmouseout="handleMouseOut(event)"
 					data-range="${stringifiedRange}"
 				>
 					${node.type}
