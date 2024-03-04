@@ -1,4 +1,4 @@
-import type { RendererContext, OutputItem } from 'vscode-notebook-renderer';
+import type { OutputItem, RendererContext } from 'vscode-notebook-renderer';
 
 export async function activate(ctx: RendererContext<void>) {
     // Basically, a tree-sitter output must get access to the `ctx.postMessage` function
@@ -11,6 +11,11 @@ export async function activate(ctx: RendererContext<void>) {
 }
 
 function renderOutput(outputItem: OutputItem, element: HTMLElement, ctx: RendererContext<void>) {
+    // Clear the element before appending new nodes
+    while (element.firstChild) {
+        element.firstChild.remove();
+    }
+
     const nodes = [];
 
     for (const item of outputItem.json().nodes) {
