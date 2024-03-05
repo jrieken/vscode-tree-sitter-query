@@ -2,7 +2,7 @@
     "name": "vscode-tree-sitter-query",
     "displayName": "vscode-tree-sitter-query",
     "publisher": "jrieken",
-    "description": "Edit and run Tree-Sitter queries",
+    "description": "Tools for working with Tree-Sitter",
     "version": "0.0.5",
     "repository": {
         "url": "https://github.com/jrieken/vscode-tree-sitter-query"
