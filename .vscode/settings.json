@@ -1,0 +1,70 @@
+{
+	"files.trimTrailingWhitespace": true,
+	"[typescript]": {
+	  "editor.insertSpaces": false,
+	  "editor.defaultFormatter": "vscode.typescript-language-features",
+	  "editor.formatOnSave": true,
+	  "editor.codeActionsOnSave": {
+		"source.organizeImports": "always"
+	  }
+	},
+	"[typescriptreact]": {
+	  "editor.insertSpaces": false,
+	  "editor.defaultFormatter": "vscode.typescript-language-features",
+	  "editor.formatOnSave": true,
+	  "editor.codeActionsOnSave": {
+		"source.organizeImports": "always"
+	  }
+	},
+	"[javascript]": {
+	  "editor.insertSpaces": false,
+	  "editor.defaultFormatter": "vscode.typescript-language-features",
+	  "editor.formatOnSave": true,
+	  "editor.codeActionsOnSave": {
+		"source.organizeImports": "always"
+	  }
+	},
+	"[json]": {
+	  "editor.defaultFormatter": "vscode.typescript-language-features",
+	  "editor.formatOnSave": true
+	},
+	"[jsonc]": {
+	  "editor.defaultFormatter": "vscode.typescript-language-features",
+	  "editor.formatOnSave": true
+	},
+	"[yaml]": {
+	  "editor.defaultFormatter": "vscode.typescript-language-features",
+	  "editor.formatOnSave": true
+	},
+	"[markdown]": {
+	  "editor.defaultFormatter": "vscode.typescript-language-features",
+	  "editor.formatOnSave": true
+	},
+	"git.branchProtection": [
+	  "main",
+	  "release/*"
+	],
+	"git.branchProtectionPrompt": "alwaysCommitToNewBranch",
+	"git.branchRandomName.enable": true,
+	"githubPullRequests.assignCreated": "${user}",
+	"githubPullRequests.defaultMergeMethod": "squash",
+	"githubPullRequests.ignoredPullRequestBranches": [
+	  "main"
+	],
+	"typescript.preferences.quoteStyle": "single",
+	"typescript.format.enable": true,
+	"typescript.format.insertSpaceAfterCommaDelimiter": true,
+	"typescript.format.insertSpaceAfterSemicolonInForStatements": true,
+	"typescript.format.insertSpaceBeforeAndAfterBinaryOperators": true,
+	"typescript.format.insertSpaceAfterKeywordsInControlFlowStatements": true,
+	"typescript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
+	"typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
+	"typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
+	"typescript.format.insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": false,
+	"typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": true,
+	"typescript.format.insertSpaceBeforeFunctionParenthesis": false,
+	"typescript.format.placeOpenBraceOnNewLineForFunctions": false,
+	"typescript.format.placeOpenBraceOnNewLineForControlBlocks": false,
+	"typescript.tsserver.experimental.enableProjectDiagnostics": true,
+	"githubPullRequests.upstreamRemote": "never",
+  }
