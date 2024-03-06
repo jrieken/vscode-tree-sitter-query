@@ -191,7 +191,7 @@ export class ParseTreeEditor {
 							}
 							selectedElement.update(selectedNode);
 							if (!isElementInViewport(selectedNode)) {
-								selectedNode.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+								selectedNode.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
 							}
 						}
 						
