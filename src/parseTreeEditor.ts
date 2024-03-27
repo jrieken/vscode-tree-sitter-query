@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import Parser from 'web-tree-sitter';
 import { printParseTree } from './parseTreePrinter';
-import { WASMLanguage, wasmLanguageLoader, } from './treeSitter';
+import { getWasmLanguage, WASMLanguage, wasmLanguageLoader } from './treeSitter';
 
 const PARSE_TREE_EDITOR_VIEW_TYPE = 'vscode-treesitter-parse-tree-editor';
 
@@ -12,9 +12,9 @@ type OriginalFileRange = {
 };
 
 const OriginalFileRange = {
-	/** 
-	 * Serialize to JSON. 
-	 * 
+	/**
+	 * Serialize to JSON.
+	 *
 	 * @remarks escapes double quotes for HTML
 	 */
 	serializeHTMLSafe(range: OriginalFileRange): string {
@@ -24,10 +24,10 @@ const OriginalFileRange = {
 
 export class ParseTreeEditor {
 
-	/**  
+	/**
 	 * @deprecated use `getParseTree` instead to get the tree
-	 * 
-	 * @internal Should only be used by `getParseTree` 
+	 *
+	 * @internal Should only be used by `getParseTree`
 	 * */
 	private __parseTree: undefined | { documentVersion: number; tree: Parser.Tree } = undefined;
 
@@ -64,7 +64,7 @@ export class ParseTreeEditor {
 			this.__parseTree?.tree.delete();
 		});
 
-		// Update the webview content 
+		// Update the webview content
 		this.updateWebview(document, webviewPanel);
 	}
 
@@ -129,19 +129,19 @@ export class ParseTreeEditor {
 					<h1> Parse Tree </h1>
 					${printParseTree(treeHandle.tree.rootNode, { printOnlyNamed: false }, ParseTreeEditor.renderNode).join('\n')}
 					<script>
-					
+
 						const api = acquireVsCodeApi();
-						
+
 						if (!api) {
 							console.error(new Error('Unexpected: No vscode api'));
 						}
-						
+
 						let selectedElement = new class {
-							
+
 							constructor() {
 								this._selectedElt = null;
 							}
-							
+
 							update(newElt) {
 								if (this._selectedElt) {
 									this._selectedElt.style.textDecoration = 'none';
@@ -156,11 +156,11 @@ export class ParseTreeEditor {
 						function handleMouseOver(event) {
 							event.target.style.textDecoration = 'underline';
 						}
-						
+
 						function handleMouseOut(event) {
 							event.target.style.textDecoration = ''
 						}
-						
+
 						function handleMouseClick(event) {
 							const clickedElement = event.target;
 
@@ -172,17 +172,17 @@ export class ParseTreeEditor {
 								originalFileRange: clickedElement.dataset.range, // stringified JSON - see OriginalFileRange
 							});
 						}
-						
+
 						window.addEventListener('message', event => {
 							const message = event.data;
 							switch (message.eventKind) {
 								case 'selectedNodeChange':
 									return handleEditorSelectionChange(message.selectedNodeRange);
-								default: 
+								default:
 									throw new Error('Unhandled event kind: ' + message.eventKind);
 							}
 						});
-						
+
 						function handleEditorSelectionChange(selectedNodeRange) {
 							const selectedNodeRangeJSON = JSON.stringify(selectedNodeRange);
 							const selectedNode = document.querySelector(\`[data-range='\${selectedNodeRangeJSON}']\`);
@@ -194,7 +194,7 @@ export class ParseTreeEditor {
 								selectedNode.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
 							}
 						}
-						
+
 						// CC-generated
 						function isElementInViewport(el) {
 							const rect = el.getBoundingClientRect();
@@ -239,8 +239,8 @@ export class ParseTreeEditor {
 			<span
 				style="margin-left:${depth * 30}px; font-size: 16px;">
 				${fieldNameStr}
-				<a 
-					style="cursor: pointer;" 
+				<a
+					style="cursor: pointer;"
 					onclick="handleMouseClick(event)"
 					onmouseover="handleMouseOver(event)"
 					onmouseout="handleMouseOut(event)"
@@ -256,7 +256,15 @@ export class ParseTreeEditor {
 
 export async function createParseTreeEditorCommand(context: vscode.ExtensionContext) {
 	const activeDocument = vscode.window.activeTextEditor?.document;
-	if (!activeDocument || !Object.values(WASMLanguage).includes(activeDocument.languageId as WASMLanguage)) {
+	if (activeDocument === undefined) {
+		vscode.window.showErrorMessage('Tree-Sitter Parse Tree Editor: This command only works when a document is open.');
+		return;
+	}
+
+	try {
+		getWasmLanguage(activeDocument.languageId);
+	} catch {
+		vscode.window.showErrorMessage(`Tree-Sitter Parse Tree Editor: Language ${activeDocument.languageId} is not supported.`);
 		return;
 	}
 
