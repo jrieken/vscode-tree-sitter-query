@@ -6,9 +6,12 @@ export function getWasmLanguage(languageId: string) {
         case 'python':
             return WASMLanguage.Python;
         case 'javascript':
-            return WASMLanguage.JavaScript;
+        case 'javascriptreact':
+            return WASMLanguage.JavaScript; // @ulugbekna: AFAIU, tree-sitter parser for JS handles both JS and JSX
         case 'typescript':
             return WASMLanguage.TypeScript;
+        case 'typescriptreact':
+            return WASMLanguage.Tsx;
         case 'go':
             return WASMLanguage.Go;
         case 'ruby':
@@ -30,6 +33,7 @@ export enum WASMLanguage {
     Python = 'python',
     JavaScript = 'javascript',
     TypeScript = 'typescript',
+    Tsx = 'tsx',
     Go = 'go',
     Ruby = 'ruby',
     Csharp = 'csharp',
