@@ -22,6 +22,9 @@ const OriginalFileRange = {
 	}
 };
 
+/**
+ * @throws {Error} if the `document.languageId` does NOT have a corresponding `WASMLanguage` (checked by `getWasmLanguage`)
+ */
 export class ParseTreeEditor {
 
 	/**
@@ -31,11 +34,15 @@ export class ParseTreeEditor {
 	 * */
 	private __parseTree: undefined | { documentVersion: number; tree: Parser.Tree } = undefined;
 
+	private readonly _wasmLang: WASMLanguage;
+
 	constructor(
 		private readonly context: vscode.ExtensionContext,
 		document: vscode.TextDocument,
 		webviewPanel: vscode.WebviewPanel,
 	) {
+		this._wasmLang = getWasmLanguage(document.languageId);
+
 		// Listen for changes in the document
 		const onDocumentChangeSubscription = vscode.workspace.onDidChangeTextDocument(async e => {
 			if (e.document.uri.toString() === document.uri.toString()) {
@@ -100,7 +107,7 @@ export class ParseTreeEditor {
 
 			const docVersion: number = document.version;
 
-			const language = await wasmLanguageLoader.loadLanguage(this.context.extensionUri, document.languageId as WASMLanguage);
+			const language = await wasmLanguageLoader.loadLanguage(this.context.extensionUri, this._wasmLang);
 
 			if (docVersion !== document.version) { continue; }
 
