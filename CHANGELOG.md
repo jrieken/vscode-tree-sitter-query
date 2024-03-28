@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Parse-tree editor: support TSX/JSX (#12, @ulugbekna)
+
 ### Fixes
 
 - Fix appending to notebook output instead of replacing it (#11, @ulugbekna)
