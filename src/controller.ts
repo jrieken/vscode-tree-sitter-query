@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import Parser, { SyntaxNode } from 'web-tree-sitter';
 import { NotebookSerializer } from './serializer';
 import { getWasmLanguage, wasmLanguageLoader, } from './treeSitter';
-import { printParseTree } from './parseTreePrinter';
 import { traverseDFPreOrder } from './treeTraversal';
 
 function startExecution(controller: vscode.NotebookController, cell: vscode.NotebookCell) {
