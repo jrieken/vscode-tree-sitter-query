@@ -12,3 +12,9 @@ export class Lazy<T extends NonNullable<any>> {
         return this._value;
     }
 }
+
+export function assertType(condition: unknown, type?: string): asserts condition {
+    if (!condition) {
+        throw new Error(type ? `Unexpected type, expected '${type}'` : 'Unexpected type');
+    }
+}

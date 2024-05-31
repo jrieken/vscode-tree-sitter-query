@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
-import { NotebookSerializer } from './serializer';
-import { createNotebookController } from './controller';
-import { WASMLanguage } from './treeSitter';
 import Parser from 'web-tree-sitter';
-import { QueryDiagnosticsProvider } from './queryDiagnosticsProvider';
+import { createNotebookController } from './controller';
+import { NodeTypesOutlineProvider } from './nodeTypesOutlineProvider';
 import { createParseTreeEditorCommand } from './parseTreeEditor';
+import { QueryDiagnosticsProvider } from './queryDiagnosticsProvider';
+import { NotebookSerializer } from './serializer';
+import { WASMLanguage } from './treeSitter';
 
 declare var navigator: object | undefined;
 
@@ -35,6 +36,10 @@ export async function activate(context: vscode.ExtensionContext) {
 		}),
 		queryDiagnosticsProvider,
 		vscode.commands.registerCommand('vscode-treesitter-parse-tree-editor.createToSide', () => createParseTreeEditorCommand(context)),
+		vscode.languages.registerDocumentSymbolProvider(
+			{ pattern: '**/node-types.json' },
+			new NodeTypesOutlineProvider(),
+		)
 	);
 }
 
