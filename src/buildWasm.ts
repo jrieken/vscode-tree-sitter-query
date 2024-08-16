@@ -36,6 +36,9 @@ async function compileWasm(outputPath: string) {
         {
             name: 'tree-sitter-rust',
         },
+        {
+            name: 'tree-sitter-php',
+        },
     ];
 
     for (const grammar of treeSitterGrammars) {
