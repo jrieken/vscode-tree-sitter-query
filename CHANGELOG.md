@@ -1,10 +1,11 @@
 # Change Log
 
-## Unreleased
+## 0.0.6
 
 ### Features
 
 - Parse-tree editor: support TSX/JSX (#12, @ulugbekna)
+- Add VS Code Outline view support for `node-types.json` (#13, @ulugbekna)
 
 ### Fixes
 
