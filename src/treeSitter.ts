@@ -26,6 +26,8 @@ export function getWasmLanguage(languageId: string) {
             return WASMLanguage.Rust;
         case 'php':
             return WASMLanguage.PHP;
+        case 'css':
+            return WASMLanguage.CSS;
         default:
             throw new Error(`Unsupported language ${languageId}`);
     }
@@ -42,7 +44,8 @@ export enum WASMLanguage {
     Cpp = 'cpp',
     Java = 'java',
     Rust = 'rust',
-    PHP = 'php'
+    PHP = 'php',
+    CSS = 'css'
 }
 
 class LangLoader {

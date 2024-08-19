@@ -40,6 +40,9 @@ async function compileWasm(outputPath: string) {
             name: 'tree-sitter-php',
             projectPath: 'tree-sitter-php/php'
         },
+        {
+            name: 'tree-sitter-css',
+        },
     ];
 
     for (const grammar of treeSitterGrammars) {
