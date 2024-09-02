@@ -30,7 +30,7 @@
 			]
 		},
 		"comment": {
-			"begin": ";;",
+			"begin": ";",
 			"beginCaptures": {
 				"0": {
 					"name": "comment.line.scm"
