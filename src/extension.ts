@@ -39,6 +39,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.languages.registerDocumentSymbolProvider(
 			{ pattern: '**/node-types.json' },
 			new NodeTypesOutlineProvider(),
+			{ label: 'Tree-Sitter Node Types' }
 		)
 	);
 }
