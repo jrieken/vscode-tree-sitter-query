@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import Parser from 'web-tree-sitter';
 import { createNotebookController } from './controller';
+import { NodeTypesDefinitionProvider } from './nodeTypesDefinitionProvider';
 import { NodeTypesOutlineProvider } from './nodeTypesOutlineProvider';
 import { createParseTreeEditorCommand } from './parseTreeEditor';
 import { QueryDiagnosticsProvider } from './queryDiagnosticsProvider';
@@ -40,7 +41,11 @@ export async function activate(context: vscode.ExtensionContext) {
 			{ pattern: '**/node-types.json' },
 			new NodeTypesOutlineProvider(),
 			{ label: 'Tree-Sitter Node Types' }
-		)
+		),
+		vscode.languages.registerDefinitionProvider(
+			{ pattern: '**/node-types.json' },
+			new NodeTypesDefinitionProvider(),
+		),
 	);
 }
 

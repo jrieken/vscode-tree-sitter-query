@@ -3,18 +3,32 @@ import * as vscode from 'vscode';
 import { ASTNodeWithOffset } from './nodeTypes';
 import { unknownToError } from './util/common/errorUtils';
 import { Result } from './util/common/result';
+import { LRUCache } from './util/vs/base/common/map';
 import { Lazy } from './utils';
 
 export class NodeTypesIndex {
 
+	private static _cache: LRUCache<string /* document contents */, Result<ASTNodeWithOffset[], Error>>;
 	private _nodes: Lazy<Result<ASTNodeWithOffset[], Error>>;
 
 	constructor(private readonly document: vscode.TextDocument) {
-		this._nodes = new Lazy(() => this.computeNodes());
+		NodeTypesIndex._cache ??= new LRUCache(10);
+		this._nodes = new Lazy(() => this.getOrComputeNodes());
 	}
 
 	public get nodes() {
 		return this._nodes.value;
+	}
+
+	private getOrComputeNodes() {
+		const myDocContents = this.document.getText();
+		const cachedResult = NodeTypesIndex._cache.get(myDocContents);
+		if (cachedResult !== undefined) {
+			return cachedResult;
+		}
+		const result = this.computeNodes();
+		NodeTypesIndex._cache.set(myDocContents, result);
+		return result;
 	}
 
 	private computeNodes(): Result<ASTNodeWithOffset[], Error> {
