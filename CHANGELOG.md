@@ -1,5 +1,9 @@
 # Change Log
 
+## Unreleased
+
+- Support Outline and Go-to-Definition for `node-types.json` files (#23, @ulugbekna)
+
 ## 0.0.6
 
 ### Features
