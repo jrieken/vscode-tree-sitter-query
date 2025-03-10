@@ -22,7 +22,7 @@
 					"include": "#node"
 				},
 				{
-					"include": "#parent-expression"
+					"include": "#paren-expression"
 				},
 				{
 					"include": "#bracket-expression"
