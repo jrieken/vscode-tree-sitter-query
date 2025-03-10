@@ -91,7 +91,7 @@
 			"patterns": [
 				{
 					"name": "variable.other.readwrite.scm",
-					"match": "\\@[a-zA-Z_.]+"
+					"match": "@[a-zA-Z0-9_.!?-]+"
 				}
 			]
 		},
