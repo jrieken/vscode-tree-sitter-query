@@ -46,7 +46,7 @@
                 "displayName": "Tree-Sitter Query",
                 "selector": [
                     {
-                        "filenamePattern": "tsqnb"
+                        "filenamePattern": "*.tsqnb"
                     }
                 ]
             }
